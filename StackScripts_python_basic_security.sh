@@ -24,53 +24,27 @@ source <ssinclude StackScriptID="1"> # StackScript Bash Library
 system_update
 
 source <ssinclude StackScriptID="124"> # lib-system
-system_install_mercurial
-system_start_etc_dir_versioning #start recording changes of /etc config files
 
 # Configure system
 source <ssinclude StackScriptID="123"> # lib-system-ubuntu
 system_update_hostname "$SYS_HOSTNAME"
-system_record_etc_dir_changes "Updated hostname" # SS124
 
 # Create user account
 system_add_user "$USER_NAME" "$USER_PASSWORD" "$USER_GROUPS" "$USER_SHELL"
 if [ "$USER_SSHKEY" ]; then
     system_user_add_ssh_key "$USER_NAME" "$USER_SSHKEY"
 fi
-system_record_etc_dir_changes "Added unprivileged user account" # SS124
 
 # Configure sshd
 system_sshd_permitrootlogin "$SSHD_PERMITROOTLOGIN"
 system_sshd_passwordauthentication "$SSHD_PASSWORDAUTH"
 touch /tmp/restart-ssh
-system_record_etc_dir_changes "Configured sshd" # SS124
 
 # Lock user account if not used for login
 if [ "SSHD_PERMITROOTLOGIN" == "No" ]; then
     system_lock_user "root"
-    system_record_etc_dir_changes "Locked root account" # SS124
+    echo "Locked root account" # SS124
 fi
-
-# Setup logcheck
-system_security_logcheck
-system_record_etc_dir_changes "Installed logcheck" # SS124
-
-# Setup fail2ban
-system_security_fail2ban
-system_record_etc_dir_changes "Installed fail2ban" # SS124
-
-# Setup firewall
-system_security_ufw_configure_basic
-system_record_etc_dir_changes "Configured UFW" # SS124
-
-source <ssinclude StackScriptID="126"> # lib-python
-python_install
-system_record_etc_dir_changes "Installed python" # SS124
-
-# lib-system - SS124
-system_install_build
-system_install_git
-system_record_etc_dir_changes "Installed build and git"
 
 restart_services
 restart_initd_services
